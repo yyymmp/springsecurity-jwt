@@ -27,6 +27,7 @@ import java.io.IOException;
  **/
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
+
     @Autowired
     UserService userService;
 
@@ -37,14 +38,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwtToken = null;
         // JWT Token 获取请求头部的 Bearer
-        System.out.println("filter:header:"+requestTokenHeader);
+        System.out.println("filter:header:" + requestTokenHeader);
         //判断，从token中得到username
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             //System.out.println("filter :requestTokenHeader not null and start with bearer");
             jwtToken = requestTokenHeader.substring(7);
             try {
                 username = JwtTokenUtils.getUserName(jwtToken);
-                username = JwtTokenUtils.getUserId(jwtToken);
             } catch (IllegalArgumentException e) {
                 System.out.println("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {

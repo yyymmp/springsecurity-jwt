@@ -1,5 +1,6 @@
 package com.security.jwt.demo.security;
 
+import com.security.jwt.demo.filter.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,8 +10,11 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
@@ -24,6 +28,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    UserAuthenticationEntryPoint userAuthenticationEntryPoint;
+
+    @Autowired
+    UserAccessDeniedHandler userAccessDeniedHandler;
+
+    @Autowired
+    JwtRequestFilter jwtRequestFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -52,10 +65,37 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/login").permitAll()
+                //swagger3路径放行
+                .antMatchers("/swagger-ui.html").permitAll()
+                .antMatchers("/swagger-ui/**").permitAll()
+                .antMatchers("/webjars/**").permitAll()
+                .antMatchers("/swagger-resources/**").permitAll()
+                .antMatchers("/v3/*").permitAll()
+                .antMatchers("/csrf").permitAll()
+                .antMatchers("/doc.html").permitAll()
+                //不能加上前缀
+                .antMatchers("/admin/**").hasRole("admin")
                 .anyRequest().authenticated()
                 .and()
 //                .addFilterBefore(new JwtLoginFilter("/login",authenticationManager()), UsernamePasswordAuthenticationFilter.class)
 //                .addFilterBefore(new JwtFilter(),UsernamePasswordAuthenticationFilter.class)
-                .csrf().disable();
+                .csrf().disable()
+                //匿名用户访问未授权资源  即未登录
+                .exceptionHandling()
+                .authenticationEntryPoint(userAuthenticationEntryPoint)
+                .and()
+                //无权访问
+                .exceptionHandling()
+                .accessDeniedHandler(userAccessDeniedHandler)
+                .and()
+                //jwt过滤器
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
+        //禁用session
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+
     }
+
+    //todo 跨域
 }
