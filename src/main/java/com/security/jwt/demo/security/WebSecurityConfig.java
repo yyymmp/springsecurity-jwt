@@ -93,8 +93,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         //禁用session
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-
     }
 
     //todo 跨域

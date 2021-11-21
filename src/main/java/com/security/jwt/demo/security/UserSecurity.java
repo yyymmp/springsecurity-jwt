@@ -21,7 +21,6 @@ import java.util.List;
 @Data
 public class UserSecurity implements UserDetails {
 
-
     UserRoleMapper userRoleMapper;
 
     /**

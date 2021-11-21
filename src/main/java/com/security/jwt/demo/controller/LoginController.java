@@ -62,7 +62,6 @@ public class LoginController {
             //其他异常
             return Response.error("登录失败");
         }
-
     }
 
     @GetMapping("/hello")
