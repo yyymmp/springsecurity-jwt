@@ -18,4 +18,6 @@ public interface UserMapper extends BaseMapper<User> {
 
     @Select("select * from tob_user where username = #{username}")
     User loadUserByUsername(String username);
+
+    User getById(int id);
 }
